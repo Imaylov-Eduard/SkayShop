@@ -3,6 +3,7 @@ package org.skypro.skyshop.basket;
 import org.skypro.skyshop.product.Product;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ProductBasket {
     private final Map<String, List<Product>> productsMap;
@@ -20,13 +21,10 @@ public class ProductBasket {
     }
 
     public int getTotalCost() {
-        int totalCost = 0;
-        for (List<Product> productList : productsMap.values()) {
-            for (Product product : productList) {
-                totalCost += product.getPrice();
-            }
-        }
-        return totalCost;
+        return productsMap.values().stream()
+                .flatMap(Collection::stream)
+                .mapToInt(Product::getPrice)
+                .sum();
     }
 
     public void printBasket() {
@@ -35,18 +33,19 @@ public class ProductBasket {
             return;
         }
 
-        int specialCount = 0;
-        for (List<Product> productList : productsMap.values()) {
-            for (Product product : productList) {
-                System.out.println(product.toString());
-                if (product.isSpecial()) {
-                    specialCount++;
-                }
-            }
-        }
+        productsMap.values().stream()
+                .flatMap(Collection::stream)
+                .forEach(System.out::println);
 
         System.out.println("Итого: " + getTotalCost());
-        System.out.println("Специальных товаров: " + specialCount);
+        System.out.println("Специальных товаров: " + getSpecialCount());
+    }
+
+    private long getSpecialCount() {
+        return productsMap.values().stream()
+                .flatMap(Collection::stream)
+                .filter(Product::isSpecial)
+                .count();
     }
 
     public boolean containsProduct(String name) {
